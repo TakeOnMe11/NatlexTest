@@ -1,19 +1,20 @@
 package com.example.natlextest.model
 
+import androidx.lifecycle.LiveData
 import androidx.room.Insert
 import androidx.room.Query
 
 interface WeatherDao {
 
     @Query("SELECT * FROM weather WHERE city_name=:cityName")
-    fun getWeatherByName(cityName: String): ArrayList<Weather>
+    suspend fun getWeatherByName(cityName: String): List<Weather>
 
     @Insert
-    fun addWeather(weather: Weather)
+    suspend fun addWeather(weather: Weather)
 
     @Query("SELECT * FROM weather GROUP BY id")
-    fun getArrayWeather(): ArrayList<Weather>
+    suspend fun getArrayWeather(): List<Weather>
 
     @Query("SELECT COUNT(*) FROM weather WHERE city_name=:cityName")
-    fun countWeatherByName(cityName: String): Int
+    suspend fun countWeatherByName(cityName: String): Int
 }

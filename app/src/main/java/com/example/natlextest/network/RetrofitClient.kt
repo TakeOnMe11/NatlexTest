@@ -9,21 +9,12 @@ import retrofit2.converter.gson.GsonConverterFactory
 
 object RetrofitClient {
 
-    private var retrofit: Retrofit? = null
-    private val gson = GsonBuilder().setLenient().create()
-
-    val client: Retrofit
-    get() {
-        if (retrofit == null) {
-            synchronized(Retrofit::class.java) {
-                if (retrofit == null) {
-                    retrofit = Retrofit.Builder()
-                        .baseUrl(BuildConfig.BASE_URL)
-                        .addConverterFactory(GsonConverterFactory.create(gson))
-                        .build()
-                }
-            }
-        }
-        return retrofit!!
+    private fun getRetrofit(): Retrofit {
+        return Retrofit.Builder()
+            .baseUrl(BuildConfig.BASE_URL)
+            .addConverterFactory(GsonConverterFactory.create())
+            .build()
     }
+
+    val apiInterface: ApiInterface = getRetrofit().create(ApiInterface::class.java)
 }
