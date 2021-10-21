@@ -13,5 +13,5 @@ data class Weather(
     @ColumnInfo(name = "temp_max") var tempMax: Double?,
     var time: String?,
     var date: String?,
-    var unit: String?
+    var unit: String? = "F"
 )

@@ -1,3 +1,10 @@
 <resources>
     <string name="app_name">NatlexTest</string>
+    <string name="fahrenheit">F</string>
+    <string name="celsius">C</string>
+    <string name="temp_min">"Minimal temperature: "</string>
+    <string name="temp_max">"Maximum temperature: "</string>
+    <string name="search_title">Search</string>
+    <string name="geoposition_title">Geoposition</string>
+    <string name="city_name_key">cityNameKey</string>
 </resources>

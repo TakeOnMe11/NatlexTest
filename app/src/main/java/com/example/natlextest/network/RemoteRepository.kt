@@ -1,37 +1,17 @@
 package com.example.natlextest.network
 
-import com.example.natlextest.model.Weather
 import com.example.natlextest.network.DTO.WeatherResponseDTO
-import com.example.natlextest.utils.Response
+import com.example.natlextest.utils.Resource
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
-import retrofit2.Retrofit
+import javax.inject.Inject
 
-interface IRemoteRepository {
-    suspend fun getWeatherByName(cityName: String): Response<WeatherResponseDTO>
-    suspend fun getWeatherByCoords(lat: Double, lon: Double): Response<WeatherResponseDTO>
-}
+class RemoteRepository @Inject constructor(private val apiInterface: ApiInterface): BaseDataSource() {
 
-class RemoteRepository(private val retrofit: RetrofitClient): IRemoteRepository {
+    private val API_KEY = "b6a9c2b82a3ef16fb32f12de98d2f907"
 
-    override suspend fun getWeatherByName(cityName: String): Response<WeatherResponseDTO> =
-        withContext(Dispatchers.IO) {
-            when (val response = retrofit.apiInterface.getWeatherByName(cityName)) {
-                is ApiResponse.ApiSuccess -> Response.Success(response.data)
-                is ApiResponse.ApiFailure -> Response.Error(response.t)
-            }
-        }
+    suspend fun getWeatherByName(cityName: String) = getResult { apiInterface.getWeatherByName(cityName, API_KEY) }
 
-    override suspend fun getWeatherByCoords(
-        lat: Double,
-        lon: Double
-    ): Response<WeatherResponseDTO> =
-        withContext(Dispatchers.IO) {
-            when (val response = retrofit.apiInterface.getWeatherByCoords(lat, lon)) {
-                is ApiResponse.ApiSuccess -> Response.Success(response.data)
-                is ApiResponse.ApiFailure -> Response.Error(response.t)
-            }
-        }
-
+    suspend fun getWeatherByCoords(lat: Double, lon: Double) = getResult { apiInterface.getWeatherByCoords(lat, lon, API_KEY) }
 }
 

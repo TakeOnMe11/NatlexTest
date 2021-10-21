@@ -9,19 +9,5 @@ import androidx.room.Room
 
 @Database(entities = [Weather::class], version = 1)
 abstract class WeatherDB: RoomDatabase() {
-    abstract val weatherDao: WeatherDao?
-
-    companion object {
-        private var instance: WeatherDB? = null
-        private val LOCK = Any()
-
-        operator fun invoke(context: Context) = instance ?: synchronized(LOCK) {
-            instance ?: createDatabase(context).also{
-                instance = it
-            }
-        }
-
-        private fun createDatabase(context: Context) =
-            Room.databaseBuilder(context.applicationContext, WeatherDB::class.java, "WeatherDB.db").build()
-    }
+    abstract val weatherDao: WeatherDao
 }
