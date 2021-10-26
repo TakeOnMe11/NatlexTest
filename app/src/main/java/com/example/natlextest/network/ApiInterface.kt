@@ -1,6 +1,5 @@
 package com.example.natlextest.network
 
-import com.example.natlextest.BuildConfig
 import com.example.natlextest.network.DTO.WeatherResponseDTO
 import retrofit2.Response
 import retrofit2.http.GET

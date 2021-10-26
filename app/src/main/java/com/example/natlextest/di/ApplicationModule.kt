@@ -3,10 +3,7 @@ package com.example.natlextest.di
 import android.content.Context
 import androidx.room.Room
 import com.example.natlextest.BuildConfig
-import com.example.natlextest.model.IRoomRepository
-import com.example.natlextest.model.RoomRepository
-import com.example.natlextest.model.WeatherDB
-import com.example.natlextest.model.WeatherDao
+import com.example.natlextest.model.*
 import com.example.natlextest.network.ApiInterface
 import com.example.natlextest.network.RemoteRepository
 import com.example.natlextest.view.WeatherListAdapter
@@ -31,7 +28,7 @@ import javax.inject.Singleton
 object ApplicationModule {
 
     private const val TIMEOUT = 20L
-    private const val BASE_URL = "https://samples.openweathermap.org/data/2.5/"
+    private const val BASE_URL = "https://api.openweathermap.org/data/2.5/"
 
     @Provides
     @Singleton
@@ -51,7 +48,6 @@ object ApplicationModule {
     fun provideRetrofit(url: String): Retrofit = Retrofit.Builder().apply {
         baseUrl(url)
         addConverterFactory(GsonConverterFactory.create())
-        addCallAdapterFactory(CoroutineCallAdapterFactory())
         client(provideHttpClient())
     }.build()
 
@@ -64,7 +60,7 @@ object ApplicationModule {
     @Provides
     @Singleton
     fun provideWeatherDatabase(@ApplicationContext appContext: Context): WeatherDB =
-        Room.databaseBuilder(appContext, WeatherDB::class.java, "trending.db")
+        Room.databaseBuilder(appContext, WeatherDB::class.java, "weather.db")
             .fallbackToDestructiveMigration()
             .build()
 
@@ -74,7 +70,7 @@ object ApplicationModule {
 
     @Provides
     @Singleton
-    fun provideRoomRepository(weatherDao: WeatherDao): IRoomRepository =
+    fun provideRoomRepository(weatherDao: WeatherDao): RoomRepository =
         RoomRepository(weatherDao)
 
     @Provides
@@ -84,5 +80,5 @@ object ApplicationModule {
 
     @Provides
     @Singleton
-    fun provideWeatherAdapter() = WeatherListAdapter()
+    fun provideWeatherAdapter(@ApplicationContext context: Context) = WeatherListAdapter(context)
 }

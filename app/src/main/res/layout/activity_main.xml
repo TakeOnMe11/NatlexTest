@@ -26,11 +26,16 @@
             android:layout_marginStart="16dp" android:layout_marginTop="42dp"
             android:textColor="@color/black"
             android:textSize="48sp"/>
+
         <androidx.appcompat.widget.SwitchCompat
+            android:id="@+id/switch_ftoc"
             android:layout_width="wrap_content"
-            android:layout_height="wrap_content" android:id="@+id/switch_ftoc"
-            android:layout_marginTop="160dp" app:layout_constraintTop_toTopOf="parent"
-            app:layout_constraintEnd_toStartOf="@+id/tv_cels" android:layout_marginEnd="8dp"/>
+            android:layout_height="wrap_content"
+            android:layout_marginTop="152dp"
+            android:layout_marginEnd="8dp"
+            app:layout_constraintEnd_toStartOf="@+id/tv_cels"
+            app:layout_constraintTop_toTopOf="parent" />
+
         <TextView
             android:text="@string/fahrenheit"
             android:layout_width="wrap_content"
@@ -49,11 +54,16 @@
             app:layout_constraintTop_toTopOf="parent" android:layout_marginEnd="16dp"
             app:layout_constraintEnd_toEndOf="parent"/>
     </androidx.constraintlayout.widget.ConstraintLayout>
+
     <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/rv_weather_list"
         android:layout_width="0dp"
         android:layout_height="0dp"
-        app:layout_constraintTop_toBottomOf="@+id/weather_main_window" app:layout_constraintStart_toStartOf="parent"
+        android:layout_marginTop="8dp"
+        app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintBottom_toBottomOf="parent" android:layout_marginTop="8dp"
-        android:id="@+id/rv_weather_list"/>
+        app:layout_constraintHorizontal_bias="0.0"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/weather_main_window"
+        app:layout_constraintVertical_bias="1.0" />
 </androidx.constraintlayout.widget.ConstraintLayout>

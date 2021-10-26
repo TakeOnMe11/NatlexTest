@@ -7,7 +7,7 @@ import androidx.sqlite.db.SupportSQLiteDatabase
 
 import androidx.room.Room
 
-@Database(entities = [Weather::class], version = 1)
+@Database(entities = [Weather::class], version = 7, exportSchema = false)
 abstract class WeatherDB: RoomDatabase() {
     abstract val weatherDao: WeatherDao
 }

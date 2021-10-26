@@ -4,23 +4,14 @@ import com.example.natlextest.network.DTO.WeatherResponseDTO
 import com.example.natlextest.utils.Resource
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import timber.log.Timber
 import java.text.SimpleDateFormat
 import java.util.*
 import javax.inject.Inject
 
-interface IRoomRepository {
-    suspend fun getWeatherByNameLocal(cityName: String): Resource<List<Weather>>
+class RoomRepository @Inject constructor(private val weatherDao: WeatherDao) {
 
-    suspend fun addWeatherLocal(weatherResponse: WeatherResponseDTO?)
-
-    suspend fun getArrayWeatherLocal(): Resource<List<Weather>>
-
-    suspend fun countWeatherByNameLocal(cityName: String): Resource<Int>
-}
-
-class RoomRepository @Inject constructor(private val weatherDao: WeatherDao): IRoomRepository {
-
-    override suspend fun getWeatherByNameLocal(cityName: String): Resource<List<Weather>> =
+    suspend fun getWeatherByNameLocal(cityName: String): Resource<List<Weather>> =
         withContext(Dispatchers.IO) {
             try {
                 Resource.success(weatherDao.getWeatherByName(cityName))
@@ -30,20 +21,21 @@ class RoomRepository @Inject constructor(private val weatherDao: WeatherDao): IR
         }
     }
 
-    override suspend fun addWeatherLocal(weatherResponse: WeatherResponseDTO?) =
+    suspend fun addWeatherLocal(weatherResponse: WeatherResponseDTO?) =
         withContext(Dispatchers.IO) {
             try {
                 val dateTime: Date = Calendar.getInstance().time
                 val tf = SimpleDateFormat("HH:mm:ss", Locale.getDefault()).format(dateTime)
                 val df = SimpleDateFormat("dd.MM.yyyy", Locale.getDefault()).format(dateTime)
                 val weather = Weather(
-                    weatherResponse?.id,
-                    weatherResponse?.cityName,
-                    weatherResponse?.main?.temp,
-                    weatherResponse?.main?.tempMin,
-                    weatherResponse?.main?.tempMax,
-                    tf,
-                    df
+                    id =0,
+                    cityId = weatherResponse?.id,
+                    cityName = weatherResponse?.cityName,
+                    temp = weatherResponse?.main?.temp,
+                    tempMin = weatherResponse?.main?.tempMin,
+                    tempMax = weatherResponse?.main?.tempMax,
+                    time = tf,
+                    date = df
                 )
                 weatherDao.addWeather(weather)
             } catch(e: Exception) {
@@ -51,7 +43,7 @@ class RoomRepository @Inject constructor(private val weatherDao: WeatherDao): IR
             }
         }
 
-    override suspend fun getArrayWeatherLocal(): Resource<List<Weather>> =
+    suspend fun getArrayWeatherLocal(): Resource<List<Weather>> =
         withContext(Dispatchers.IO) {
             try {
                 Resource.success(weatherDao.getArrayWeather())
@@ -61,10 +53,10 @@ class RoomRepository @Inject constructor(private val weatherDao: WeatherDao): IR
             }
         }
 
-    override suspend fun countWeatherByNameLocal(cityName: String): Resource<Int> =
+    suspend fun countWeatherByNameLocal(): Resource<List<Weather>> =
         withContext(Dispatchers.IO) {
             try {
-                Resource.success(weatherDao.countWeatherByName(cityName))
+                Resource.success(weatherDao.getAllWeather())
             } catch (e: Exception) {
                 e.printStackTrace()
                 Resource.error(e.message ?: e.toString())
