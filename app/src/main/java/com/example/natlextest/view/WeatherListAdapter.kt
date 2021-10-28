@@ -23,11 +23,15 @@ import javax.inject.Inject
 import kotlin.coroutines.CoroutineContext
 import kotlin.time.TimedValue
 
-class WeatherListAdapter @Inject constructor(val context: Context): RecyclerView.Adapter<WeatherListAdapter.Holder>(){
+class WeatherListAdapter(private val listener: ItemClickedListener): RecyclerView.Adapter<WeatherListAdapter.Holder>(){
 
     private val items = ArrayList<Weather>()
     private var allWeather = ArrayList<Weather>()
     private var showCells = false
+
+    interface ItemClickedListener {
+        fun onClickedItem(item: Weather)
+    }
 
     fun setItems(items: ArrayList<Weather>) {
         this.items.clear()
@@ -50,47 +54,36 @@ class WeatherListAdapter @Inject constructor(val context: Context): RecyclerView
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): Holder {
         val binding = WeatherListItemBinding.inflate(LayoutInflater.from(parent.context), parent, false)
-        return Holder(binding)
+        return Holder(binding, listener)
     }
 
     override fun getItemCount(): Int = items.size
 
 
     override fun onBindViewHolder(holder: Holder, position: Int) {
-        holder.bind(items[position])
+        holder.bind(items[position], listener)
         holder.setIsRecyclable(false)
+
     }
 
-    inner class Holder(private val itemBinding: WeatherListItemBinding): RecyclerView.ViewHolder(itemBinding.root) {
-        private var cityName: String? = null
+    inner class Holder(private val itemBinding: WeatherListItemBinding, private val listener: ItemClickedListener): RecyclerView.ViewHolder(itemBinding.root){
 
-        fun bind(item: Weather){
+        fun bind(item: Weather, listener: ItemClickedListener){
             val itemCounter = allWeather.count { it.cityId == item.cityId }
-            val kelvTemp = item.temp
-            var fahrTemp = 0.0
-            var cellsTemp = 0.0
-            if (kelvTemp !== null) {
-                cellsTemp = kelvTemp - 273.15
-            }
-            if (kelvTemp !== null) {
-                fahrTemp = (kelvTemp - 273.15) * 9/5 + 32
-            }
             if (!showCells) {
-                (item.cityName + ", " + fahrTemp.toInt() + " F").also { itemBinding.listCityNameTemp.text = it }
+                (item.cityName + ", " + item.tempFahr?.toInt() + " F").also { itemBinding.listCityNameTemp.text = it }
             } else {
-                (item.cityName + ", " + cellsTemp.toInt() + " C").also { itemBinding.listCityNameTemp.text = it }
+                (item.cityName + ", " + item.tempCells?.toInt() + " C").also { itemBinding.listCityNameTemp.text = it }
             }
             (item.date + " " + item.time).also { itemBinding.listWeatherDatetime.text = it }
             if (itemCounter > 1) {
                 itemBinding.listChartIcon.visibility = View.VISIBLE
             }
             itemBinding.listChartIcon.setOnClickListener {
-                cityName = item.cityName
-                val intent = Intent(context, ChartActivity::class.java)
-                intent.putExtra(context.getString(R.string.city_name_key), cityName)
-                context.startActivity(intent)
+                listener.onClickedItem(item)
             }
         }
+
     }
 
 }

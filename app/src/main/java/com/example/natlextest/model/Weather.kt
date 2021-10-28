@@ -9,10 +9,10 @@ data class Weather(
     @PrimaryKey(autoGenerate = true) var id: Int,
     @ColumnInfo(name = "city_id") var cityId: Int?,
     @ColumnInfo(name = "city_name") var cityName: String?,
-    var temp: Double?,
+    @ColumnInfo(name = "temp_fahr") var tempFahr: Double?,
+    @ColumnInfo(name = "temp_cells") var tempCells: Double?,
     @ColumnInfo(name = "temp_min") var tempMin: Double?,
     @ColumnInfo(name = "temp_max") var tempMax: Double?,
     var time: String?,
-    var date: String?,
-    var unit: String? = "F"
+    var date: String?
 )

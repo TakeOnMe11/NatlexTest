@@ -27,13 +27,16 @@ class RoomRepository @Inject constructor(private val weatherDao: WeatherDao) {
                 val dateTime: Date = Calendar.getInstance().time
                 val tf = SimpleDateFormat("HH:mm:ss", Locale.getDefault()).format(dateTime)
                 val df = SimpleDateFormat("dd.MM.yyyy", Locale.getDefault()).format(dateTime)
+                val fahrTemp = ((weatherResponse?.main?.temp?.minus(273.15))?.times(9/5))?.plus(32)
+                val cellsTemp = (weatherResponse?.main?.temp?.minus(273.15))
                 val weather = Weather(
-                    id =0,
+                    id = 0,
                     cityId = weatherResponse?.id,
                     cityName = weatherResponse?.cityName,
-                    temp = weatherResponse?.main?.temp,
-                    tempMin = weatherResponse?.main?.tempMin,
-                    tempMax = weatherResponse?.main?.tempMax,
+                    tempFahr = fahrTemp,
+                    tempCells = cellsTemp,
+                    tempMin = weatherResponse?.main?.tempMin?.minus(273.15),
+                    tempMax = weatherResponse?.main?.tempMax?.minus(273.15),
                     time = tf,
                     date = df
                 )

@@ -77,8 +77,4 @@ object ApplicationModule {
     @Singleton
     fun provideRemoteRepository(apiInterface: ApiInterface): RemoteRepository =
         RemoteRepository(apiInterface)
-
-    @Provides
-    @Singleton
-    fun provideWeatherAdapter(@ApplicationContext context: Context) = WeatherListAdapter(context)
 }

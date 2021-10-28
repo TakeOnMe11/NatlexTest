@@ -9,6 +9,7 @@ import com.example.natlextest.model.Weather
 import com.example.natlextest.network.RemoteRepository
 import com.example.natlextest.utils.Resource
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import timber.log.Timber
 import javax.inject.Inject
@@ -23,9 +24,9 @@ class MainViewModel @Inject constructor(
     val error: MutableLiveData<String> = MutableLiveData()
     val allWeather: MutableLiveData<Resource<List<Weather>>> = MutableLiveData()
 
-    suspend fun getWeatherRemote(cityName: String) {
+    fun getWeatherRemote(cityName: String) {
         data.postValue(Resource.loading())
-        viewModelScope.launch {
+        viewModelScope.launch(Dispatchers.IO) {
             val response = remoteRepository.getWeatherByName(cityName)
             when (response.status) {
                 Resource.Status.SUCCESS -> {
@@ -38,9 +39,9 @@ class MainViewModel @Inject constructor(
         }
     }
 
-    suspend fun getWeatherRemote(lat: Double, lon: Double) {
+    fun getWeatherRemote(lat: Double, lon: Double) {
         data.postValue(Resource.loading())
-        viewModelScope.launch {
+        viewModelScope.launch(Dispatchers.IO) {
             val response = remoteRepository.getWeatherByCoords(lat, lon)
             when (response.status) {
                 Resource.Status.SUCCESS -> {
@@ -53,9 +54,9 @@ class MainViewModel @Inject constructor(
         }
     }
 
-    suspend fun getWeatherLocal(cityName: String) {
+    fun getWeatherLocal(cityName: String) {
         data.postValue(Resource.loading())
-        viewModelScope.launch {
+        viewModelScope.launch(Dispatchers.IO) {
             val response = roomRepository.getWeatherByNameLocal(cityName)
             when (response.status){
                 Resource.Status.SUCCESS -> data.postValue(response)
@@ -65,9 +66,9 @@ class MainViewModel @Inject constructor(
         }
     }
 
-    suspend fun getArrayWeather() {
+    fun getArrayWeather() {
         data.postValue(Resource.loading())
-        viewModelScope.launch {
+        viewModelScope.launch(Dispatchers.IO) {
             val response = roomRepository.getArrayWeatherLocal()
             when (response.status) {
                 Resource.Status.SUCCESS -> data.postValue(response)
@@ -77,8 +78,8 @@ class MainViewModel @Inject constructor(
         }
     }
 
-    suspend fun getAllWeather() {
-        viewModelScope.launch {
+    fun getAllWeather() {
+        viewModelScope.launch(Dispatchers.IO) {
             val response = roomRepository.countWeatherByNameLocal()
             when (response.status) {
                 Resource.Status.SUCCESS -> allWeather.postValue(response)
