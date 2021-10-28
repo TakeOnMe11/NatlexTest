@@ -6,11 +6,6 @@ import com.example.natlextest.BuildConfig
 import com.example.natlextest.model.*
 import com.example.natlextest.network.ApiInterface
 import com.example.natlextest.network.RemoteRepository
-import com.example.natlextest.view.WeatherListAdapter
-import com.google.gson.Gson
-import com.google.gson.GsonBuilder
-import com.google.gson.reflect.TypeToken
-import com.jakewharton.retrofit2.adapter.kotlin.coroutines.CoroutineCallAdapterFactory
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn

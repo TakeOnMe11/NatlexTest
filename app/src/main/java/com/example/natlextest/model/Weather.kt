@@ -3,6 +3,7 @@ package com.example.natlextest.model
 import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.PrimaryKey
+import com.example.natlextest.view.adapter.Item
 
 @Entity
 data class Weather(
@@ -15,4 +16,4 @@ data class Weather(
     @ColumnInfo(name = "temp_max") var tempMax: Double?,
     var time: String?,
     var date: String?
-)
+): Item

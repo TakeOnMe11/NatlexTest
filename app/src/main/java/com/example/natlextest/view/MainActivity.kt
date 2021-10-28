@@ -19,6 +19,9 @@ import com.example.natlextest.R
 import com.example.natlextest.databinding.ActivityMainBinding
 import com.example.natlextest.model.Weather
 import com.example.natlextest.utils.Resource
+import com.example.natlextest.view.adapter.ItemClickedListener
+import com.example.natlextest.view.adapter.PostWeather
+import com.example.natlextest.view.adapter.WeatherAdapter
 import com.example.natlextest.viewmodel.MainViewModel
 import dagger.hilt.android.AndroidEntryPoint
 
@@ -27,7 +30,7 @@ import dagger.hilt.android.AndroidEntryPoint
 class MainActivity : AppCompatActivity() {
 
     private val viewModel: MainViewModel by viewModels()
-    lateinit var weatherListAdapter: WeatherListAdapter
+    lateinit var weatherListAdapter: WeatherAdapter
     private lateinit var mainBinding: ActivityMainBinding
     private var showCells: MutableLiveData<Boolean> = MutableLiveData()
 
@@ -123,7 +126,7 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun initRecyclerView() {
-        weatherListAdapter = WeatherListAdapter(object: WeatherListAdapter.ItemClickedListener {
+        weatherListAdapter = WeatherAdapter(listOf(PostWeather()), object: ItemClickedListener {
             override fun onClickedItem(item: Weather) {
                 val intent = Intent(this@MainActivity, ChartActivity::class.java)
                 intent.putExtra(this@MainActivity.getString(R.string.city_name_key), item.cityName)
@@ -152,7 +155,7 @@ class MainActivity : AppCompatActivity() {
                     }
                 } catch(e: NoSuchElementException) {
                 }
-                weatherListAdapter.setItems(data as ArrayList<Weather>)
+                weatherListAdapter.setItems(data)
             }
             Resource.Status.LOADING -> onLoading(true)
             Resource.Status.ERROR -> onFailure(response.message)
