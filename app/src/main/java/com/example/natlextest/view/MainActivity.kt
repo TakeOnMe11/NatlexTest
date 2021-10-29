@@ -1,5 +1,6 @@
 package com.example.natlextest.view
 
+import android.Manifest
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.location.Location
@@ -7,12 +8,16 @@ import android.location.LocationListener
 import android.location.LocationManager
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import android.os.Looper
 import android.view.Menu
 import android.view.MenuItem
 import android.widget.SearchView
+import androidx.activity.result.ActivityResultLauncher
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
 import androidx.appcompat.content.res.AppCompatResources
 import androidx.core.app.ActivityCompat
+import androidx.core.content.ContextCompat
 import androidx.lifecycle.*
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.natlextest.R
@@ -23,7 +28,10 @@ import com.example.natlextest.view.adapter.ItemClickedListener
 import com.example.natlextest.view.adapter.PostWeather
 import com.example.natlextest.view.adapter.WeatherAdapter
 import com.example.natlextest.viewmodel.MainViewModel
+import com.google.android.gms.location.*
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.android.synthetic.main.weather_list_item.*
+import kotlinx.coroutines.flow.*
 
 
 @AndroidEntryPoint
@@ -32,7 +40,8 @@ class MainActivity : AppCompatActivity() {
     private val viewModel: MainViewModel by viewModels()
     lateinit var weatherListAdapter: WeatherAdapter
     private lateinit var mainBinding: ActivityMainBinding
-    private var showCells: MutableLiveData<Boolean> = MutableLiveData()
+    private var showCells = MutableSharedFlow<Boolean>(replay = 1)
+    private lateinit var requestPermissionLauncher: ActivityResultLauncher<String>
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -41,7 +50,7 @@ class MainActivity : AppCompatActivity() {
         initRecyclerView()
         initObservers()
         viewModel.getArrayWeather()
-        mainBinding.switchFtoc.setOnCheckedChangeListener { _, p1 -> showCells.postValue(p1)}
+        mainBinding.switchFtoc.setOnCheckedChangeListener { _, p1 -> changeUnits(p1)}
     }
 
     override fun onCreateOptionsMenu(menu: Menu?): Boolean {
@@ -89,19 +98,18 @@ class MainActivity : AppCompatActivity() {
             }
             R.id.geopos -> {
                 if (ActivityCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
-                    val locationManager = getSystemService(LOCATION_SERVICE) as LocationManager?
-                    locationManager?.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, 0L, 0f, object: LocationListener {
-                        override fun onLocationChanged(p0: Location) {
-                            viewModel.getWeatherRemote(p0.latitude, p0.longitude)
+                    val locationCallback = object : LocationCallback() {
+                        override fun onLocationResult(p0: LocationResult) {
+                            viewModel.getWeatherRemote(p0.lastLocation.latitude, p0.lastLocation.longitude)
+                            super.onLocationResult(p0)
                         }
-
-                        override fun onStatusChanged(p0: String?, p1: Int, p2: Bundle?) {}
-
-                        override fun onProviderEnabled(provider: String) {}
-
-                        override fun onProviderDisabled(provider: String) {}
-
-                    } )
+                    }
+                    val fusedLocationClient = LocationServices.getFusedLocationProviderClient(this)
+                    fusedLocationClient.requestLocationUpdates(
+                        LocationRequest.create(),
+                        locationCallback,
+                        Looper.getMainLooper()
+                    )
                 } else {
                     ActivityCompat.requestPermissions(this, arrayOf(android.Manifest.permission.ACCESS_FINE_LOCATION), 101)
                 }
@@ -112,9 +120,27 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun initObservers() {
-        observe(viewModel.data, ::onRetrieveData)
-        observe(viewModel.error, ::onFailure)
-        observe(viewModel.allWeather, ::onCounterChanged)
+        lifecycleScope.launchWhenStarted {
+            viewModel.data.collect {
+                onRetrieveData(it)
+            }
+        }
+        lifecycleScope.launchWhenStarted {
+            viewModel.error.collect {
+                onFailure(it)
+            }
+        }
+        lifecycleScope.launchWhenCreated {
+            viewModel.allWeather.collect {
+                onCounterChanged(it)
+            }
+        }
+    }
+
+    private fun changeUnits(flag: Boolean) {
+        lifecycleScope.launchWhenStarted {
+            showCells.tryEmit(flag)
+        }
     }
 
     private fun onCounterChanged(response: Resource<List<Weather>>?) {
@@ -143,13 +169,11 @@ class MainActivity : AppCompatActivity() {
         when (response?.status) {
             Resource.Status.SUCCESS -> {
                 val data = response.data ?: emptyList()
-                var currentWeather: Weather
                 try{
                     val maxId = data.maxOf { it.id }
                     for (i in data) {
                         if (i.id == maxId) {
-                            currentWeather = i
-                            showCurrentWeather(currentWeather)
+                            showCurrentWeather(i)
                             viewModel.getAllWeather()
                         }
                     }
@@ -171,21 +195,20 @@ class MainActivity : AppCompatActivity() {
 
     }
 
-    private fun <T: Any, L: LiveData<T>> LifecycleOwner.observe(liveData: L, body: (T?) -> Unit) =
-        liveData.observe(this, Observer(body))
-
     private fun showCurrentWeather(weather: Weather) {
         mainBinding.tvCityName.text = weather.cityName
         mainBinding.tvTemp.text = weather.tempFahr?.toInt().toString()
-        observe(showCells, {
-            if (showCells.value == true) {
-                mainBinding.tvTemp.text = weather.tempCells?.toInt().toString()
-                weatherListAdapter.changeFormat(showCells.value)
-            } else {
-                mainBinding.tvTemp.text = weather.tempFahr?.toInt().toString()
-                weatherListAdapter.changeFormat(showCells.value)
+        lifecycleScope.launchWhenStarted {
+            showCells.collect {
+                if (it) {
+                    mainBinding.tvTemp.text = weather.tempCells?.toInt().toString()
+                    weatherListAdapter.changeFormat(it)
+                } else {
+                    mainBinding.tvTemp.text = weather.tempFahr?.toInt().toString()
+                    weatherListAdapter.changeFormat(it)
+                }
             }
-        })
+        }
 
         weather.tempCells.let {
             if (it != null) when {

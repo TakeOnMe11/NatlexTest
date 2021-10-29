@@ -22,12 +22,12 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlin.coroutines.CoroutineContext
 import kotlinx.coroutines.*
+import kotlinx.coroutines.flow.collect
 import org.w3c.dom.Entity
 
 @AndroidEntryPoint
-class ChartActivity: AppCompatActivity(), CoroutineScope {
+class ChartActivity: AppCompatActivity() {
 
-    private var job: Job = Job()
     private lateinit var viewModel: MainViewModel
     private lateinit var binding: ActivityChartBinding
 
@@ -38,14 +38,20 @@ class ChartActivity: AppCompatActivity(), CoroutineScope {
         setContentView(binding.root)
         val keyCityName = intent.getStringExtra(getString(R.string.city_name_key))
         initObservers()
-        launch {
-            keyCityName?.let { viewModel.getWeatherLocal(it) }
-        }
+        keyCityName?.let { viewModel.getWeatherLocal(it) }
     }
 
     private fun initObservers() {
-        observe(viewModel.data, ::onRetrieveData)
-        observe(viewModel.error, ::onFailure)
+        lifecycleScope.launchWhenStarted {
+            viewModel.data.collect {
+                onRetrieveData(it)
+            }
+        }
+        lifecycleScope.launchWhenStarted {
+            viewModel.error.collect {
+                onFailure(it)
+            }
+        }
     }
 
     private fun onRetrieveData(response: Resource<List<Weather>>?) {
@@ -69,11 +75,6 @@ class ChartActivity: AppCompatActivity(), CoroutineScope {
 
     }
 
-    private fun <T: Any, L: LiveData<T>> LifecycleOwner.observe(liveData: L, body: (T?) -> Unit) =
-        liveData.observe(this, Observer(body))
-
-    override val coroutineContext: CoroutineContext
-        get() = Dispatchers.Main + job
 
     private fun showTemp(weather: List<Weather>?){
         val tempMin = ArrayList<Double>()
